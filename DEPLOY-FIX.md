@@ -56,6 +56,7 @@ Di Vercel → **Redeploy**
 | `NEXT_PUBLIC_SUPABASE_URL` | https://kyfgmupvvgyxjlvabmwl.supabase.co |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | JWT panjang dari Supabase Settings → API → **anon public** (bukan teks "anon key dari Supabase") |
 | `SUPABASE_SERVICE_ROLE_KEY` | (dari Supabase Settings → API) |
+| `NEXT_PUBLIC_APP_URL` | `https://si-tamu-rri-kdi.vercel.app` (URL production, untuk QR Code) |
 
 ---
 
