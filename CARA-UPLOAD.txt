@@ -1,40 +1,63 @@
-========================================
-PERBAIKI BUILD GAGAL + HAPUS TOMBOL CETAK
-========================================
+╔══════════════════════════════════════════════════════════╗
+║  UPLOAD INI KE GITHUB — PERBAIKI 2 MASALAH SEKALIGUS    ║
+╚══════════════════════════════════════════════════════════╝
 
-PENYEBAB ERROR:
-File UPLOAD-qr-generator.tsx salah taruh di ROOT GitHub.
-Harus diganti file asli di src/components/qrcode/qr-generator.tsx
+MASALAH:
+1. Tombol Cetak masih ada     → kode lama di GitHub
+2. Jam 02:13 padahal 10:20    → belum pakai zona WITA
 
-========================================
-LANGKAH 1 — HAPUS file salah di GitHub
-========================================
+SOLUSI: Upload 3 file dari folder GITHUB-UPLOAD
 
-Buka:
-https://github.com/diramadhansalsabil-cyber/SI-TAMU-RRI/blob/main/UPLOAD-qr-generator.tsx
+═══════════════════════════════════════════════════════════
+LANGKAH 1 — Hapus file salah (jika masih ada)
+═══════════════════════════════════════════════════════════
 
-Klik ikon tempat sampah (Delete file) → Commit
+Buka: https://github.com/diramadhansalsabil-cyber/SI-TAMU-RRI
 
-========================================
-LANGKAH 2 — GANTI file yang benar
-========================================
+Jika ada file "UPLOAD-qr-generator.tsx" di root → DELETE
 
-Buka:
-https://github.com/diramadhansalsabil-cyber/SI-TAMU-RRI/edit/main/src/components/qrcode/qr-generator.tsx
+═══════════════════════════════════════════════════════════
+LANGKAH 2 — Upload folder src (CARA TERMUDAH)
+═══════════════════════════════════════════════════════════
 
-Ctrl+A → Delete (hapus semua)
+1. Buka: https://github.com/diramadhansalsabil-cyber/SI-TAMU-RRI
 
-Copy paste isi dari file di komputer:
-c:\xampp\htdocs\SI-TAMU RRI\src\components\qrcode\qr-generator.tsx
+2. Klik: Add file → Upload files
 
-Commit message: Hapus tombol cetak QR
+3. Buka folder di komputer:
+   c:\xampp\htdocs\SI-TAMU RRI\GITHUB-UPLOAD
 
-========================================
-LANGKAH 3 — Tunggu deploy Ready
-========================================
+4. DRAG folder "src" ke halaman GitHub
+   (GitHub akan replace file yang sudah ada)
 
-https://vercel.com/diramadhansalsabil-cybers-projects/si-tamu-rri-kdi/deployments
+5. Commit message: Fix hapus cetak dan jam WITA
 
-Ctrl+Shift+R di halaman QR Code
+6. Klik: Commit changes
 
-HASIL: Hanya tombol Download PNG (tanpa Cetak)
+ATAU extract FIX-UPLOAD.zip lalu drag folder src
+
+═══════════════════════════════════════════════════════════
+LANGKAH 3 — Tunggu deploy
+═══════════════════════════════════════════════════════════
+
+Buka: https://vercel.com/diramadhansalsabil-cybers-projects/si-tamu-rri-kdi/deployments
+
+Tunggu status READY (hijau) — jangan yang ERROR
+
+Ctrl+Shift+R di browser
+
+═══════════════════════════════════════════════════════════
+HASIL SETELAH BERHASIL
+═══════════════════════════════════════════════════════════
+
+✓ Hanya tombol "Download PNG" (Cetak hilang)
+✓ Jam pengunjung = jam komputer (WITA Kendari)
+   Contoh: 10:13 bukan 02:13
+
+═══════════════════════════════════════════════════════════
+FILE YANG DIUPLOAD (3 file penting)
+═══════════════════════════════════════════════════════════
+
+src/components/qrcode/qr-generator.tsx  → hapus tombol cetak
+src/lib/utils.ts                        → jam WITA
+src/lib/stats.ts                        → statistik jam WITA
