@@ -187,7 +187,7 @@ export function VisitorForm() {
           </div>
 
           <div className="space-y-2">
-            <Label>Foto Selfie / KTP</Label>
+            <Label>Foto Selfie</Label>
             <div className="flex flex-col items-center gap-4 rounded-lg border-2 border-dashed p-6">
               {photoPreview ? (
                 <img
