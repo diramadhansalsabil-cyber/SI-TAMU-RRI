@@ -1,0 +1,35 @@
+========================================
+CARA PERBAIKI CETAK QR (5 MENIT)
+========================================
+
+MASALAH: GitHub masih kode lama (window.open).
+SOLUSI: Upload file perbaikan ke GitHub.
+
+LANGKAH:
+
+1. Buka browser:
+   https://github.com/diramadhansalsabil-cyber/SI-TAMU-RRI
+
+2. Klik "Add file" -> "Upload files"
+
+3. Buka folder di komputer:
+   c:\xampp\htdocs\SI-TAMU RRI\GITHUB-UPLOAD
+
+4. Drag folder "src" DAN file "next.config.ts" ke halaman upload GitHub
+   (GitHub akan replace file yang sudah ada)
+
+5. Commit message: Fix cetak QR tanpa popup
+
+6. Klik "Commit changes"
+
+7. Tunggu 1-2 menit, buka:
+   https://vercel.com/diramadhansalsabil-cybers-projects/si-tamu-rri-kdi/deployments
+   Status harus READY (hijau)
+
+8. Buka: https://si-tamu-rri-kdi.vercel.app/dashboard/qrcode
+   Tekan Ctrl+Shift+R
+   Klik CETAK -> dialog print muncul (TANPA popup)
+
+========================================
+ALTERNATIF: Extract FIX-UPLOAD.zip lalu upload isinya
+========================================
