@@ -6,7 +6,7 @@ export default function QRCodePage() {
       <div>
         <h1 className="text-2xl font-bold text-primary">Generate QR Code</h1>
         <p className="text-muted-foreground">
-          Buat dan cetak QR Code untuk registrasi tamu
+          Buat dan unduh QR Code untuk registrasi tamu
         </p>
       </div>
       <QRGenerator />

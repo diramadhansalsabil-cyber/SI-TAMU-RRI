@@ -1,8 +1,5 @@
-import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-
 export default function SuccessPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-blue-50 to-white p-4">
@@ -19,9 +16,9 @@ export default function SuccessPage() {
             Data Anda telah tercatat dalam sistem. Silakan menunggu petugas untuk
             memandu kunjungan Anda.
           </p>
-          <Button asChild>
-            <Link href="/">Kembali ke Beranda</Link>
-          </Button>
+          <div className="rounded-lg bg-primary px-6 py-3 text-lg font-semibold text-primary-foreground">
+            Welcome to LPP RRI Kendari
+          </div>
         </CardContent>
       </Card>
     </div>
