@@ -1,35 +1,40 @@
 ========================================
-CARA PERBAIKI CETAK QR (5 MENIT)
+PERBAIKI BUILD GAGAL + HAPUS TOMBOL CETAK
 ========================================
 
-MASALAH: GitHub masih kode lama (window.open).
-SOLUSI: Upload file perbaikan ke GitHub.
-
-LANGKAH:
-
-1. Buka browser:
-   https://github.com/diramadhansalsabil-cyber/SI-TAMU-RRI
-
-2. Klik "Add file" -> "Upload files"
-
-3. Buka folder di komputer:
-   c:\xampp\htdocs\SI-TAMU RRI\GITHUB-UPLOAD
-
-4. Drag folder "src" DAN file "next.config.ts" ke halaman upload GitHub
-   (GitHub akan replace file yang sudah ada)
-
-5. Commit message: Fix cetak QR tanpa popup
-
-6. Klik "Commit changes"
-
-7. Tunggu 1-2 menit, buka:
-   https://vercel.com/diramadhansalsabil-cybers-projects/si-tamu-rri-kdi/deployments
-   Status harus READY (hijau)
-
-8. Buka: https://si-tamu-rri-kdi.vercel.app/dashboard/qrcode
-   Tekan Ctrl+Shift+R
-   Klik CETAK -> dialog print muncul (TANPA popup)
+PENYEBAB ERROR:
+File UPLOAD-qr-generator.tsx salah taruh di ROOT GitHub.
+Harus diganti file asli di src/components/qrcode/qr-generator.tsx
 
 ========================================
-ALTERNATIF: Extract FIX-UPLOAD.zip lalu upload isinya
+LANGKAH 1 — HAPUS file salah di GitHub
 ========================================
+
+Buka:
+https://github.com/diramadhansalsabil-cyber/SI-TAMU-RRI/blob/main/UPLOAD-qr-generator.tsx
+
+Klik ikon tempat sampah (Delete file) → Commit
+
+========================================
+LANGKAH 2 — GANTI file yang benar
+========================================
+
+Buka:
+https://github.com/diramadhansalsabil-cyber/SI-TAMU-RRI/edit/main/src/components/qrcode/qr-generator.tsx
+
+Ctrl+A → Delete (hapus semua)
+
+Copy paste isi dari file di komputer:
+c:\xampp\htdocs\SI-TAMU RRI\src\components\qrcode\qr-generator.tsx
+
+Commit message: Hapus tombol cetak QR
+
+========================================
+LANGKAH 3 — Tunggu deploy Ready
+========================================
+
+https://vercel.com/diramadhansalsabil-cybers-projects/si-tamu-rri-kdi/deployments
+
+Ctrl+Shift+R di halaman QR Code
+
+HASIL: Hanya tombol Download PNG (tanpa Cetak)
