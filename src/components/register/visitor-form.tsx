@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { visitorSchema, type VisitorFormData } from "@/lib/validations/visitor";
+import { visitorRegistrationSchema, type VisitorRegistrationData } from "@/lib/validations/visitor";
 
 export function VisitorForm() {
   const router = useRouter();
@@ -23,8 +23,8 @@ export function VisitorForm() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<VisitorFormData>({
-    resolver: zodResolver(visitorSchema),
+  } = useForm<VisitorRegistrationData>({
+    resolver: zodResolver(visitorRegistrationSchema),
     defaultValues: {
       instansi: "",
       foto_url: "",
@@ -48,7 +48,7 @@ export function VisitorForm() {
     setPhotoPreview(URL.createObjectURL(file));
   };
 
-  const onSubmit = async (data: VisitorFormData) => {
+  const onSubmit = async (data: VisitorRegistrationData) => {
     setIsSubmitting(true);
     try {
       let fotoUrl = "";
@@ -113,30 +113,16 @@ export function VisitorForm() {
             )}
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="nik">NIK *</Label>
-              <Input
-                id="nik"
-                placeholder="16 digit NIK"
-                maxLength={16}
-                {...register("nik")}
-              />
-              {errors.nik && (
-                <p className="text-sm text-destructive">{errors.nik.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="nomor_telepon">Nomor Telepon *</Label>
-              <Input
-                id="nomor_telepon"
-                placeholder="08xxxxxxxxxx"
-                {...register("nomor_telepon")}
-              />
-              {errors.nomor_telepon && (
-                <p className="text-sm text-destructive">{errors.nomor_telepon.message}</p>
-              )}
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="nomor_telepon">Nomor Telepon *</Label>
+            <Input
+              id="nomor_telepon"
+              placeholder="08xxxxxxxxxx"
+              {...register("nomor_telepon")}
+            />
+            {errors.nomor_telepon && (
+              <p className="text-sm text-destructive">{errors.nomor_telepon.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -175,10 +161,10 @@ export function VisitorForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="orang_yang_dituju">Orang yang Dituju *</Label>
+            <Label htmlFor="orang_yang_dituju">Programe *</Label>
             <Input
               id="orang_yang_dituju"
-              placeholder="Nama pegawai yang dituju"
+              placeholder="Nama programe yang dituju"
               {...register("orang_yang_dituju")}
             />
             {errors.orang_yang_dituju && (

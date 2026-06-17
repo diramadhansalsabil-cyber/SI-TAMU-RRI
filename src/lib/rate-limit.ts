@@ -1,15 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
+import { getSupabaseServiceEnv } from "@/lib/supabase/env";
 
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
 const MAX_REQUESTS = 5;
 
 function getServiceClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error("Missing Supabase service role credentials");
-  }
-  return createClient(url, key);
+  const { url, serviceKey } = getSupabaseServiceEnv();
+  return createClient(url, serviceKey);
 }
 
 export async function checkRateLimit(

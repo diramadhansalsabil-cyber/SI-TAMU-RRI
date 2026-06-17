@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/server";
-import { visitorSchema } from "@/lib/validations/visitor";
+import { visitorRegistrationSchema } from "@/lib/validations/visitor";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sanitizeInput } from "@/lib/utils";
 
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const parsed = visitorSchema.safeParse(body);
+    const parsed = visitorRegistrationSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       .from("visitors")
       .insert({
         nama_lengkap: sanitizeInput(data.nama_lengkap),
-        nik: sanitizeInput(data.nik),
+        nik: "-",
         nomor_telepon: sanitizeInput(data.nomor_telepon),
         instansi: data.instansi ? sanitizeInput(data.instansi) : null,
         alamat: sanitizeInput(data.alamat),

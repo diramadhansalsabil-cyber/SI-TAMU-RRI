@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { visitorSchema, type VisitorFormData } from "@/lib/validations/visitor";
+import { visitorUpdateSchema, type VisitorFormData } from "@/lib/validations/visitor";
 import { Visitor } from "@/types";
 
 interface VisitorEditDialogProps {
@@ -40,10 +40,9 @@ export function VisitorEditDialog({
     handleSubmit,
     formState: { errors },
   } = useForm<VisitorFormData>({
-    resolver: zodResolver(visitorSchema),
+    resolver: zodResolver(visitorUpdateSchema),
     defaultValues: {
       nama_lengkap: visitor.nama_lengkap,
-      nik: visitor.nik,
       nomor_telepon: visitor.nomor_telepon,
       instansi: visitor.instansi || "",
       alamat: visitor.alamat,
@@ -91,22 +90,23 @@ export function VisitorEditDialog({
               <p className="text-sm text-destructive">{errors.nama_lengkap.message}</p>
             )}
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="edit-nik">NIK</Label>
-              <Input id="edit-nik" maxLength={16} {...register("nik")} />
-              {errors.nik && (
-                <p className="text-sm text-destructive">{errors.nik.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-telepon">Telepon</Label>
-              <Input id="edit-telepon" {...register("nomor_telepon")} />
-              {errors.nomor_telepon && (
-                <p className="text-sm text-destructive">{errors.nomor_telepon.message}</p>
-              )}
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="edit-telepon">Telepon</Label>
+            <Input id="edit-telepon" {...register("nomor_telepon")} />
+            {errors.nomor_telepon && (
+              <p className="text-sm text-destructive">{errors.nomor_telepon.message}</p>
+            )}
           </div>
+          {visitor.foto_url && (
+            <div className="space-y-2">
+              <Label>Foto</Label>
+              <img
+                src={visitor.foto_url}
+                alt={visitor.nama_lengkap}
+                className="h-32 w-32 rounded-lg object-cover ring-1 ring-border"
+              />
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="edit-instansi">Instansi</Label>
             <Input id="edit-instansi" {...register("instansi")} />
@@ -126,7 +126,7 @@ export function VisitorEditDialog({
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-dituju">Orang yang Dituju</Label>
+            <Label htmlFor="edit-dituju">Programe</Label>
             <Input id="edit-dituju" {...register("orang_yang_dituju")} />
             {errors.orang_yang_dituju && (
               <p className="text-sm text-destructive">{errors.orang_yang_dituju.message}</p>

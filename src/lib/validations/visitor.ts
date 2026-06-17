@@ -8,7 +8,9 @@ export const visitorSchema = z.object({
   nik: z
     .string()
     .length(16, "NIK harus 16 digit")
-    .regex(/^\d+$/, "NIK hanya boleh berisi angka"),
+    .regex(/^\d+$/, "NIK hanya boleh berisi angka")
+    .optional()
+    .or(z.literal("")),
   nomor_telepon: z
     .string()
     .min(10, "Nomor telepon minimal 10 digit")
@@ -25,11 +27,14 @@ export const visitorSchema = z.object({
     .max(300, "Tujuan kunjungan maksimal 300 karakter"),
   orang_yang_dituju: z
     .string()
-    .min(2, "Orang yang dituju wajib diisi")
+    .min(2, "Programe wajib diisi")
     .max(100, "Maksimal 100 karakter"),
   foto_url: z.string().url().optional().or(z.literal("")),
 });
 
+export const visitorRegistrationSchema = visitorSchema.omit({ nik: true });
+
 export const visitorUpdateSchema = visitorSchema.partial();
 
 export type VisitorFormData = z.infer<typeof visitorSchema>;
+export type VisitorRegistrationData = z.infer<typeof visitorRegistrationSchema>;

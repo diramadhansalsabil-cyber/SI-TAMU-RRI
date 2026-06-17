@@ -79,11 +79,29 @@ export function VisitorsTable({ visitors, onRefresh }: VisitorsTableProps) {
           </Button>
         ),
       },
-      { accessorKey: "nik", header: "NIK" },
+      {
+        accessorKey: "foto_url",
+        header: "Foto",
+        cell: ({ row }) => {
+          const url = row.original.foto_url;
+          if (!url) {
+            return <span className="text-muted-foreground">-</span>;
+          }
+          return (
+            <a href={url} target="_blank" rel="noopener noreferrer">
+              <img
+                src={url}
+                alt={row.original.nama_lengkap}
+                className="h-12 w-12 rounded-md object-cover ring-1 ring-border"
+              />
+            </a>
+          );
+        },
+      },
       { accessorKey: "nomor_telepon", header: "Telepon" },
       { accessorKey: "instansi", header: "Instansi", cell: ({ row }) => row.original.instansi || "-" },
       { accessorKey: "tujuan_kunjungan", header: "Tujuan" },
-      { accessorKey: "orang_yang_dituju", header: "Dituju" },
+      { accessorKey: "orang_yang_dituju", header: "Programe" },
       {
         accessorKey: "waktu_kedatangan",
         header: ({ column }) => (
@@ -163,7 +181,7 @@ export function VisitorsTable({ visitors, onRefresh }: VisitorsTableProps) {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Cari nama, NIK, telepon..."
+              placeholder="Cari nama, telepon..."
               value={globalFilter}
               onChange={(e) => setGlobalFilter(e.target.value)}
               className="pl-9"
