@@ -1,63 +1,81 @@
 ╔══════════════════════════════════════════════════════════╗
-║  UPLOAD INI KE GITHUB — PERBAIKI 2 MASALAH SEKALIGUS    ║
+║  KENAPA PERUBAHAN BELUM MUNCUL DI WEBSITE?              ║
 ╚══════════════════════════════════════════════════════════╝
 
-MASALAH:
-1. Tombol Cetak masih ada     → kode lama di GitHub
-2. Jam 02:13 padahal 10:20    → belum pakai zona WITA
+PENYEBAB UTAMA (sudah dicek di GitHub):
+File diupload ke LOKASI SALAH!
 
-SOLUSI: Upload 3 file dari folder GITHUB-UPLOAD
+  ❌ SALAH: GITHUB-UPLOAD/src/components/...  (Vercel TIDAK baca ini)
+  ❌ SALAH: visitor-form.tsx di root repo
+  ✅ BENAR: src/components/register/visitor-form.tsx
 
-═══════════════════════════════════════════════════════════
-LANGKAH 1 — Hapus file salah (jika masih ada)
-═══════════════════════════════════════════════════════════
-
-Buka: https://github.com/diramadhansalsabil-cyber/SI-TAMU-RRI
-
-Jika ada file "UPLOAD-qr-generator.tsx" di root → DELETE
+Website Vercel hanya membaca folder "src/" di root repo.
+Upload ke GITHUB-UPLOAD/ tidak mengubah website sama sekali.
 
 ═══════════════════════════════════════════════════════════
-LANGKAH 2 — Upload folder src (CARA TERMUDAH)
+CARA TERCEPAT — Jalankan script deploy (disarankan)
 ═══════════════════════════════════════════════════════════
 
-1. Buka: https://github.com/diramadhansalsabil-cyber/SI-TAMU-RRI
+1. Install Git (jika belum): https://git-scm.com/download/win
 
-2. Klik: Add file → Upload files
+2. Buka folder: c:\xampp\htdocs\SI-TAMU RRI
 
-3. Buka folder di komputer:
-   c:\xampp\htdocs\SI-TAMU RRI\GITHUB-UPLOAD
+3. Klik kanan file "deploy-github.ps1" -> Run with PowerShell
 
-4. DRAG folder "src" ke halaman GitHub
-   (GitHub akan replace file yang sudah ada)
+4. Saat diminta login GitHub:
+   - Username: diramadhansalsabil-cyber
+   - Password: Personal Access Token (BUKAN password akun)
+   - Buat token: github.com -> Settings -> Developer settings
+     -> Personal access tokens -> Generate (centang "repo")
 
-5. Commit message: Fix hapus cetak dan jam WITA
-
-6. Klik: Commit changes
-
-ATAU extract FIX-UPLOAD.zip lalu drag folder src
+5. Tunggu Vercel deploy READY, lalu Ctrl+Shift+R di browser
 
 ═══════════════════════════════════════════════════════════
-LANGKAH 3 — Tunggu deploy
+CARA MANUAL — Edit langsung di GitHub (1 file dulu untuk tes)
 ═══════════════════════════════════════════════════════════
 
-Buka: https://vercel.com/diramadhansalsabil-cybers-projects/si-tamu-rri-kdi/deployments
+1. Buka link ini:
+   https://github.com/diramadhansalsabil-cyber/SI-TAMU-RRI/edit/main/src/components/register/visitor-form.tsx
 
-Tunggu status READY (hijau) — jangan yang ERROR
+2. Hapus SEMUA isi file, ganti dengan isi dari komputer:
+   c:\xampp\htdocs\SI-TAMU RRI\src\components\register\visitor-form.tsx
+   (buka dengan Notepad, Ctrl+A, Ctrl+C, paste ke GitHub)
 
-Ctrl+Shift+R di browser
+3. Commit changes
+
+4. Cek apakah field NIK hilang di:
+   https://si-tamu-rri-kdi.vercel.app/register
+
+5. Ulangi untuk file penting lainnya (lihat daftar di bawah)
 
 ═══════════════════════════════════════════════════════════
-HASIL SETELAH BERHASIL
+FILE YANG HARUS ADA DI src/ (bukan GITHUB-UPLOAD/)
 ═══════════════════════════════════════════════════════════
 
-✓ Hanya tombol "Download PNG" (Cetak hilang)
-✓ Jam pengunjung = jam komputer (WITA Kendari)
-   Contoh: 10:13 bukan 02:13
+src/components/register/visitor-form.tsx   → tanpa NIK, label Programe
+src/components/visitors/visitors-table.tsx → kolom Foto, tanpa NIK
+src/components/visitors/visitor-edit-dialog.tsx
+src/components/qrcode/qr-generator.tsx     → tanpa tombol Cetak
+src/lib/validations/visitor.ts
+src/lib/utils.ts                           → jam WITA
+src/lib/stats.ts
+src/app/api/visitors/route.ts
+src/app/success/page.tsx
+src/lib/export/excel.ts
+src/lib/export/pdf.ts
 
 ═══════════════════════════════════════════════════════════
-FILE YANG DIUPLOAD (3 file penting)
+BERSIHKAN FILE SALAH DI GITHUB (opsional)
 ═══════════════════════════════════════════════════════════
 
-src/components/qrcode/qr-generator.tsx  → hapus tombol cetak
-src/lib/utils.ts                        → jam WITA
-src/lib/stats.ts                        → statistik jam WITA
+Hapus folder GITHUB-UPLOAD/ dan file visitor-form.tsx di root repo.
+File-file itu tidak dipakai Vercel tapi membingungkan.
+
+═══════════════════════════════════════════════════════════
+CARA CEK SUDAH BENAR
+═══════════════════════════════════════════════════════════
+
+Buka: https://raw.githubusercontent.com/diramadhansalsabil-cyber/SI-TAMU-RRI/main/src/components/register/visitor-form.tsx
+
+Jika masih ada teks "NIK *" → belum berhasil upload ke src/
+Jika ada teks "Programe *" → sudah benar, tunggu Vercel deploy

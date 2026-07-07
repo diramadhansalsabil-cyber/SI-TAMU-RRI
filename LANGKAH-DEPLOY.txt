@@ -1,0 +1,183 @@
+╔══════════════════════════════════════════════════════════════════╗
+║  LANGKAH DEPLOY SI-TAMU RRI — DARI KOMPUTER KE WEBSITE           ║
+╚══════════════════════════════════════════════════════════════════╝
+
+PENTING — BACA DULU:
+  Kode perbaikan ada di folder:  c:\xampp\htdocs\SI-TAMU RRI\src\
+  Vercel HANYA membaca folder "src/" di GitHub (bukan GITHUB-UPLOAD/).
+
+  ❌ JANGAN upload folder GITHUB-UPLOAD ke GitHub
+  ❌ JANGAN upload file .zip ke root repo
+  ✅ HARUS masuk ke path: src/components/..., src/lib/..., dll.
+
+
+═══════════════════════════════════════════════════════════════════
+BAGIAN A — BUAT TOKEN GITHUB (sekali saja, ~5 menit)
+═══════════════════════════════════════════════════════════════════
+
+Langkah A1. Buka browser, login ke GitHub
+  → https://github.com/login
+
+Langkah A2. Klik foto profil (pojok kanan atas) → Settings
+
+Langkah A3. Scroll ke bawah, klik:
+  Developer settings
+  → Personal access tokens
+  → Tokens (classic)
+  → Generate new token
+  → Generate new token (classic)
+
+Langkah A4. Isi form:
+  Note        : SI-TAMU deploy
+  Expiration  : 90 days (atau No expiration)
+  Centang     : ✅ repo  (full control of private repositories)
+
+Langkah A5. Klik "Generate token" di bawah
+
+Langkah A6. SALIN token yang muncul (contoh: ghp_xxxxxxxxxxxx)
+  ⚠️ Token hanya muncul SEKALI. Simpan di Notepad sementara.
+  ⚠️ Jangan share token ke siapapun.
+
+
+═══════════════════════════════════════════════════════════════════
+BAGIAN B — DEPLOY PAKAI SCRIPT (CARA PALING MUDAH)
+═══════════════════════════════════════════════════════════════════
+
+Langkah B1. Buka File Explorer, masuk ke:
+  c:\xampp\htdocs\SI-TAMU RRI
+
+Langkah B2. Double-klik file:
+  DEPLOY.bat
+
+  (Jika muncul peringatan keamanan → klik "More info" → "Run anyway")
+
+Langkah B3. Jendela hitam (terminal) akan terbuka. Tunggu sampai muncul:
+  "4. Push ke GitHub..."
+
+Langkah B4. Saat diminta login:
+  Username : diramadhansalsabil-cyber
+  Password : tempel TOKEN dari Langkah A6 (BUKAN password GitHub)
+
+  Catatan: saat mengetik password, layar tidak menampilkan karakter — normal.
+
+Langkah B5. Jika berhasil, muncul teks:
+  "BERHASIL! Tunggu deploy Vercel..."
+
+  Tekan Enter untuk menutup jendela.
+
+
+═══════════════════════════════════════════════════════════════════
+BAGIAN C — TUNGGU VERCEL DEPLOY (~2–5 menit)
+═══════════════════════════════════════════════════════════════════
+
+Langkah C1. Buka:
+  https://vercel.com/diramadhansalsabil-cybers-projects/si-tamu-rri-kdi/deployments
+
+Langkah C2. Deployment paling atas harus status:
+  ✅ Ready  (hijau)
+
+  Jika ❌ Error → screenshot error-nya dan minta bantuan.
+
+Langkah C3. Buka website:
+  https://si-tamu-rri-kdi.vercel.app/register
+
+Langkah C4. Tekan Ctrl + Shift + R  (hard refresh, bukan F5 biasa)
+
+
+═══════════════════════════════════════════════════════════════════
+BAGIAN D — CEK PERUBAHAN SUDAH MUNCUL
+═══════════════════════════════════════════════════════════════════
+
+Halaman /register harus:
+  ✅ TIDAK ada field "NIK"
+  ✅ Ada label "Programe" (bukan "Orang yang Dituju")
+  ✅ Label foto: "Foto Selfie" (bukan "Foto Selfie / KTP")
+
+Halaman /dashboard/visitors (setelah login admin):
+  ✅ Ada kolom "Foto"
+  ✅ TIDAK ada kolom "NIK"
+  ✅ Kolom "Programe"
+
+Halaman /dashboard/qrcode:
+  ✅ Hanya tombol "Download PNG" (TIDAK ada "Cetak")
+
+Jam kunjungan:
+  ✅ Sesuai jam WITA Kendari (sama dengan jam komputer)
+
+
+═══════════════════════════════════════════════════════════════════
+BAGIAN E — CEK TEKNIS DI GITHUB (opsional)
+═══════════════════════════════════════════════════════════════════
+
+Buka link ini di browser:
+  https://raw.githubusercontent.com/diramadhansalsabil-cyber/SI-TAMU-RRI/main/src/components/register/visitor-form.tsx
+
+  Masih ada "NIK *"     → deploy belum masuk ke src/ (ulangi Bagian B)
+  Ada "Programe *"      → GitHub sudah benar, tunggu Vercel saja
+
+
+═══════════════════════════════════════════════════════════════════
+BAGIAN F — JIKA SCRIPT GAGAL (alternatif manual Git)
+═══════════════════════════════════════════════════════════════════
+
+Langkah F1. Buka PowerShell atau CMD
+
+Langkah F2. Jalankan perintah satu per satu:
+
+  cd "c:\xampp\htdocs\SI-TAMU RRI"
+  "C:\Program Files\Git\bin\git.exe" clone https://github.com/diramadhansalsabil-cyber/SI-TAMU-RRI.git %TEMP%\si-tamu-deploy
+  xcopy /E /I /Y "src" "%TEMP%\si-tamu-deploy\src"
+  copy /Y next.config.ts "%TEMP%\si-tamu-deploy\"
+  cd %TEMP%\si-tamu-deploy
+  "C:\Program Files\Git\bin\git.exe" add src/ next.config.ts
+  "C:\Program Files\Git\bin\git.exe" commit -m "Fix: update src folder"
+  "C:\Program Files\Git\bin\git.exe" push origin main
+
+Langkah F3. Login dengan token saat diminta (sama seperti Bagian B4)
+
+
+═══════════════════════════════════════════════════════════════════
+BAGIAN G — BERSIHKAN FILE SALAH DI GITHUB (opsional)
+═══════════════════════════════════════════════════════════════════
+
+Setelah website sudah benar, hapus di GitHub repo:
+  - folder GITHUB-UPLOAD/
+  - file visitor-form.tsx di root (bukan di dalam src/)
+  - file UPLOAD-*.tsx di root
+
+  Cara: buka https://github.com/diramadhansalsabil-cyber/SI-TAMU-RRI
+        klik file/folder → ikon tempat sampah → Commit changes
+
+
+═══════════════════════════════════════════════════════════════════
+TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════
+
+Masalah: "Push gagal" / "Authentication failed"
+  → Token salah atau expired. Buat token baru (Bagian A).
+
+Masalah: "Running scripts is disabled"
+  → Pakai DEPLOY.bat (bukan klik kanan .ps1 langsung).
+
+Masalah: Website masih lama setelah deploy Ready
+  → Ctrl+Shift+R, atau buka tab Incognito/Private.
+
+Masalah: Vercel build Error
+  → Cek Environment Variables di Vercel (4 variabel wajib):
+     NEXT_PUBLIC_SUPABASE_URL
+     NEXT_PUBLIC_SUPABASE_ANON_KEY
+     SUPABASE_SERVICE_ROLE_KEY
+     NEXT_PUBLIC_APP_URL=https://si-tamu-rri-kdi.vercel.app
+
+Masalah: Perubahan tidak muncul meski GitHub sudah benar
+  → Pastikan file di path src/... bukan GITHUB-UPLOAD/src/...
+
+
+═══════════════════════════════════════════════════════════════════
+LINK PENTING
+═══════════════════════════════════════════════════════════════════
+
+GitHub repo  : https://github.com/diramadhansalsabil-cyber/SI-TAMU-RRI
+Vercel deploy: https://vercel.com/diramadhansalsabil-cybers-projects/si-tamu-rri-kdi/deployments
+Website      : https://si-tamu-rri-kdi.vercel.app
+Login admin  : https://si-tamu-rri-kdi.vercel.app/login
