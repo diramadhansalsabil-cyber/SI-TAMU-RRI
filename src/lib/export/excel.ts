@@ -10,7 +10,7 @@ export function exportVisitorsToExcel(visitors: Visitor[], filename = "data-tamu
     Instansi: v.instansi || "-",
     Alamat: v.alamat,
     "Tujuan Kunjungan": v.tujuan_kunjungan,
-    Programe: v.orang_yang_dituju,
+    Programa: v.orang_yang_dituju,
     Foto: v.foto_url || "-",
     "Waktu Kedatangan": formatDate(v.waktu_kedatangan),
   }));

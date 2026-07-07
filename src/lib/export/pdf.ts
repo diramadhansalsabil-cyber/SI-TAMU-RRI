@@ -21,7 +21,7 @@ export function exportVisitorsToPDF(visitors: Visitor[], filename = "data-tamu")
         "Telepon",
         "Instansi",
         "Tujuan",
-        "Programe",
+        "Programa",
         "Waktu",
       ],
     ],

@@ -101,7 +101,7 @@ export function VisitorsTable({ visitors, onRefresh }: VisitorsTableProps) {
       { accessorKey: "nomor_telepon", header: "Telepon" },
       { accessorKey: "instansi", header: "Instansi", cell: ({ row }) => row.original.instansi || "-" },
       { accessorKey: "tujuan_kunjungan", header: "Tujuan" },
-      { accessorKey: "orang_yang_dituju", header: "Programe" },
+      { accessorKey: "orang_yang_dituju", header: "Programa" },
       {
         accessorKey: "waktu_kedatangan",
         header: ({ column }) => (

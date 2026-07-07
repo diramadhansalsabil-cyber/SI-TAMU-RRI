@@ -126,7 +126,7 @@ export function VisitorEditDialog({
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-dituju">Programe</Label>
+            <Label htmlFor="edit-dituju">Programa</Label>
             <Input id="edit-dituju" {...register("orang_yang_dituju")} />
             {errors.orang_yang_dituju && (
               <p className="text-sm text-destructive">{errors.orang_yang_dituju.message}</p>
