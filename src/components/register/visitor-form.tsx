@@ -161,10 +161,10 @@ export function VisitorForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="orang_yang_dituju">Programa *</Label>
+            <Label htmlFor="orang_yang_dituju">Programa (opsional)</Label>
             <Input
               id="orang_yang_dituju"
-              placeholder="Nama programa yang dituju"
+              placeholder="Contoh: Programa 1, PRG-001, RRI-PRO2"
               {...register("orang_yang_dituju")}
             />
             {errors.orang_yang_dituju && (

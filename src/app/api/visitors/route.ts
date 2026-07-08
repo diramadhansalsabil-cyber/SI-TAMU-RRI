@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
         instansi: data.instansi ? sanitizeInput(data.instansi) : null,
         alamat: sanitizeInput(data.alamat),
         tujuan_kunjungan: sanitizeInput(data.tujuan_kunjungan),
-        orang_yang_dituju: sanitizeInput(data.orang_yang_dituju),
+        orang_yang_dituju: data.orang_yang_dituju ? sanitizeInput(data.orang_yang_dituju) : "",
         foto_url: data.foto_url || null,
         waktu_kedatangan: new Date().toISOString(),
       })

@@ -27,8 +27,9 @@ export const visitorSchema = z.object({
     .max(300, "Tujuan kunjungan maksimal 300 karakter"),
   orang_yang_dituju: z
     .string()
-    .min(2, "Programa wajib diisi")
-    .max(100, "Maksimal 100 karakter"),
+    .max(255, "Maksimal 255 karakter")
+    .optional()
+    .or(z.literal("")),
   foto_url: z.string().url().optional().or(z.literal("")),
 });
 

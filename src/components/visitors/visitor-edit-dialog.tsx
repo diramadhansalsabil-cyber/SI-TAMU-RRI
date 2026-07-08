@@ -126,8 +126,8 @@ export function VisitorEditDialog({
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-dituju">Programa</Label>
-            <Input id="edit-dituju" {...register("orang_yang_dituju")} />
+            <Label htmlFor="edit-dituju">Programa (opsional)</Label>
+            <Input id="edit-dituju" placeholder="Boleh dikosongkan" {...register("orang_yang_dituju")} />
             {errors.orang_yang_dituju && (
               <p className="text-sm text-destructive">{errors.orang_yang_dituju.message}</p>
             )}

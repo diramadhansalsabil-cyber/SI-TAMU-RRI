@@ -35,7 +35,7 @@ export async function PUT(
     if (data.instansi !== undefined) updateData.instansi = data.instansi ? sanitizeInput(data.instansi) : null;
     if (data.alamat) updateData.alamat = sanitizeInput(data.alamat);
     if (data.tujuan_kunjungan) updateData.tujuan_kunjungan = sanitizeInput(data.tujuan_kunjungan);
-    if (data.orang_yang_dituju) updateData.orang_yang_dituju = sanitizeInput(data.orang_yang_dituju);
+    if (data.orang_yang_dituju !== undefined) updateData.orang_yang_dituju = data.orang_yang_dituju ? sanitizeInput(data.orang_yang_dituju) : "";
     if (data.foto_url !== undefined) updateData.foto_url = data.foto_url || null;
 
     const { data: visitor, error } = await supabase
