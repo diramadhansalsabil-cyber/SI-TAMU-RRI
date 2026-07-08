@@ -231,7 +231,7 @@ export function VisitorForm() {
                 </span>
               </label>
               <p className="text-xs text-muted-foreground">
-                Maks. 5MB (JPG, PNG, WebP) &mdash; otomatis dikompres
+                Maks. 5MB (JPG, PNG, WebP) &mdash; otomatis dikompres ke maks. 200KB
               </p>
             </div>
             {photoError && (

@@ -1,7 +1,7 @@
 const MAX_UPLOAD_SIZE = 5 * 1024 * 1024;
-const TARGET_MAX_BYTES = 500 * 1024;
-const SKIP_COMPRESS_BELOW = 300 * 1024;
+const TARGET_MAX_BYTES = 200 * 1024;
 const MAX_DIMENSION = 1920;
+const MIN_DIMENSION = 800;
 const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 export class ImageValidationError extends Error {}
@@ -34,12 +34,30 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number):
   });
 }
 
+function drawScaled(source: CanvasImageSource, width: number, height: number): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(source, 0, 0, width, height);
+  }
+  return canvas;
+}
+
 /**
  * Validasi + kompres foto di sisi klien sebelum upload.
- * - Validasi tipe (JPG/JPEG/PNG/WEBP) dan ukuran maksimal 5MB (file asli).
- * - Re-encode lewat canvas sehingga metadata EXIF otomatis terhapus.
- * - Menjaga resolusi (turun hanya jika sisi terpanjang > 1920px).
- * - Target hasil 100-500KB; file kecil (<300KB) dilewati agar tidak over-compress.
+ *
+ * - Validasi tipe (JPG/JPEG/PNG/WEBP) & ukuran maksimal 5MB (file asli).
+ * - Target hasil maksimal 200KB, kualitas visual tetap tajam (HD).
+ * - Kompresi adaptif: turunkan kualitas dulu, baru kurangi dimensi bila perlu.
+ * - Aspect ratio dipertahankan, tanpa crop.
+ * - Orientasi tidak diubah (browser menerapkan orientasi EXIF saat menggambar,
+ *   hasil re-encode canvas tampil benar tanpa metadata EXIF).
+ * - Metadata EXIF terhapus otomatis lewat re-encode canvas.
+ * - Jika file asli sudah < 200KB, dikembalikan apa adanya (tanpa kompres ulang).
  */
 export async function compressImage(file: File): Promise<File> {
   const type = file.type.toLowerCase();
@@ -50,7 +68,7 @@ export async function compressImage(file: File): Promise<File> {
     throw new ImageValidationError("Ukuran file maksimal 5MB");
   }
 
-  if (file.size < SKIP_COMPRESS_BELOW) {
+  if (file.size <= TARGET_MAX_BYTES) {
     return file;
   }
 
@@ -58,8 +76,11 @@ export async function compressImage(file: File): Promise<File> {
   try {
     const img = await loadImage(objectUrl);
 
-    let width = img.naturalWidth || img.width;
-    let height = img.naturalHeight || img.height;
+    const originalWidth = img.naturalWidth || img.width;
+    const originalHeight = img.naturalHeight || img.height;
+
+    let width = originalWidth;
+    let height = originalHeight;
     const longest = Math.max(width, height);
     if (longest > MAX_DIMENSION) {
       const scale = MAX_DIMENSION / longest;
@@ -67,43 +88,45 @@ export async function compressImage(file: File): Promise<File> {
       height = Math.round(height * scale);
     }
 
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return file;
-    ctx.drawImage(img, 0, 0, width, height);
-
     const outputType = supportsWebp() ? "image/webp" : "image/jpeg";
+    const minQuality = outputType === "image/webp" ? 0.6 : 0.7;
 
-    let quality = 0.85;
-    let blob = await canvasToBlob(canvas, outputType, quality);
-    while (blob.size > TARGET_MAX_BYTES && quality > 0.5) {
-      quality = Math.round((quality - 0.1) * 100) / 100;
-      blob = await canvasToBlob(canvas, outputType, quality);
-    }
+    let canvas = drawScaled(img, width, height);
+    if (!canvas.getContext("2d")) return file;
 
-    if (blob.size > TARGET_MAX_BYTES) {
-      let scaledCanvas = canvas;
-      while (blob.size > TARGET_MAX_BYTES && Math.max(scaledCanvas.width, scaledCanvas.height) > 640) {
-        const next = document.createElement("canvas");
-        next.width = Math.round(scaledCanvas.width * 0.85);
-        next.height = Math.round(scaledCanvas.height * 0.85);
-        const nctx = next.getContext("2d");
-        if (!nctx) break;
-        nctx.drawImage(scaledCanvas, 0, 0, next.width, next.height);
-        scaledCanvas = next;
-        blob = await canvasToBlob(scaledCanvas, outputType, 0.8);
+    let best: Blob | null = null;
+
+    while (true) {
+      let quality = outputType === "image/webp" ? 0.9 : 0.88;
+      let blob = await canvasToBlob(canvas, outputType, quality);
+
+      while (blob.size > TARGET_MAX_BYTES && quality > minQuality) {
+        quality = Math.round((quality - 0.05) * 100) / 100;
+        blob = await canvasToBlob(canvas, outputType, quality);
       }
+
+      if (!best || blob.size < best.size) best = blob;
+
+      if (blob.size <= TARGET_MAX_BYTES) {
+        best = blob;
+        break;
+      }
+
+      const longestSide = Math.max(canvas.width, canvas.height);
+      if (longestSide <= MIN_DIMENSION) break;
+
+      const nextWidth = Math.round(canvas.width * 0.85);
+      const nextHeight = Math.round(canvas.height * 0.85);
+      canvas = drawScaled(canvas, nextWidth, nextHeight);
     }
 
-    if (blob.size >= file.size) {
+    if (!best || best.size >= file.size) {
       return file;
     }
 
     const ext = outputType === "image/webp" ? "webp" : "jpg";
     const baseName = file.name.replace(/\.[^.]+$/, "");
-    return new File([blob], `${baseName}.${ext}`, {
+    return new File([best], `${baseName}.${ext}`, {
       type: outputType,
       lastModified: Date.now(),
     });
