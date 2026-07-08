@@ -55,6 +55,14 @@ export async function POST(request: NextRequest) {
     }
 
     const data = parsed.data;
+
+    if (!data.foto_url) {
+      return NextResponse.json(
+        { error: "Foto Selfie wajib diupload." },
+        { status: 400 }
+      );
+    }
+
     const supabase = await createServiceClient();
 
     const { data: visitor, error } = await supabase

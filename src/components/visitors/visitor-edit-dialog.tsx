@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { visitorUpdateSchema, type VisitorFormData } from "@/lib/validations/visitor";
+import { compressImage, ImageValidationError } from "@/lib/image-compress";
 import { Visitor } from "@/types";
 
 interface VisitorEditDialogProps {
@@ -34,6 +35,10 @@ export function VisitorEditDialog({
   onSuccess,
 }: VisitorEditDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
 
   const {
     register,
@@ -52,13 +57,57 @@ export function VisitorEditDialog({
     },
   });
 
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setPhotoError(null);
+    setIsProcessingPhoto(true);
+    try {
+      const compressed = await compressImage(file);
+      setPhotoFile(compressed);
+      setPhotoPreview((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return URL.createObjectURL(compressed);
+      });
+    } catch (err) {
+      const message =
+        err instanceof ImageValidationError
+          ? err.message
+          : "Gagal memproses foto. Coba foto lain.";
+      setPhotoFile(null);
+      setPhotoPreview(null);
+      setPhotoError(message);
+      toast.error(message);
+    } finally {
+      setIsProcessingPhoto(false);
+    }
+  };
+
   const onSubmit = async (data: VisitorFormData) => {
     setIsSubmitting(true);
     try {
+      let fotoUrl = visitor.foto_url || "";
+
+      if (photoFile) {
+        const formData = new FormData();
+        formData.append("file", photoFile);
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+        if (!uploadRes.ok) {
+          const err = await uploadRes.json();
+          throw new Error(err.error || "Gagal upload foto");
+        }
+        const uploadData = await uploadRes.json();
+        fotoUrl = uploadData.url;
+      }
+
       const res = await fetch(`/api/visitors/${visitor.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, foto_url: fotoUrl }),
       });
 
       if (!res.ok) {
@@ -74,6 +123,8 @@ export function VisitorEditDialog({
       setIsSubmitting(false);
     }
   };
+
+  const currentPhoto = photoPreview || visitor.foto_url;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -97,16 +148,53 @@ export function VisitorEditDialog({
               <p className="text-sm text-destructive">{errors.nomor_telepon.message}</p>
             )}
           </div>
-          {visitor.foto_url && (
-            <div className="space-y-2">
-              <Label>Foto</Label>
-              <img
-                src={visitor.foto_url}
-                alt={visitor.nama_lengkap}
-                className="h-32 w-32 rounded-lg object-cover ring-1 ring-border"
-              />
+          <div className="space-y-2">
+            <Label>Foto</Label>
+            <div className="flex items-center gap-4">
+              {currentPhoto ? (
+                <img
+                  src={currentPhoto}
+                  alt={visitor.nama_lengkap}
+                  className="h-24 w-24 rounded-lg object-cover ring-1 ring-border"
+                />
+              ) : (
+                <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
+                  Tidak ada
+                </div>
+              )}
+              <div className="space-y-1">
+                <label htmlFor="edit-photo-upload" className="cursor-pointer">
+                  <input
+                    id="edit-photo-upload"
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    className="hidden"
+                    onChange={handlePhotoChange}
+                    disabled={isProcessingPhoto}
+                  />
+                  <span className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-input bg-background px-3 text-sm font-medium hover:bg-accent">
+                    {isProcessingPhoto ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Memproses...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4" />
+                        Ganti Foto
+                      </>
+                    )}
+                  </span>
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  Kosongkan untuk pakai foto lama
+                </p>
+              </div>
             </div>
-          )}
+            {photoError && (
+              <p className="text-sm text-destructive">{photoError}</p>
+            )}
+          </div>
           <div className="space-y-2">
             <Label htmlFor="edit-instansi">Instansi</Label>
             <Input id="edit-instansi" {...register("instansi")} />
@@ -136,7 +224,7 @@ export function VisitorEditDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Batal
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || isProcessingPhoto}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Simpan
             </Button>

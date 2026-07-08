@@ -12,12 +12,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { visitorRegistrationSchema, type VisitorRegistrationData } from "@/lib/validations/visitor";
+import { compressImage, ImageValidationError } from "@/lib/image-compress";
 
 export function VisitorForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
 
   const {
     register,
@@ -31,45 +34,60 @@ export function VisitorForm() {
     },
   });
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      toast.error("File harus berupa gambar");
-      return;
+    setPhotoError(null);
+    setIsProcessingPhoto(true);
+    try {
+      const compressed = await compressImage(file);
+      setPhotoFile(compressed);
+      setPhotoPreview((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return URL.createObjectURL(compressed);
+      });
+    } catch (err) {
+      const message =
+        err instanceof ImageValidationError
+          ? err.message
+          : "Gagal memproses foto. Coba foto lain.";
+      setPhotoFile(null);
+      setPhotoPreview(null);
+      setPhotoError(message);
+      toast.error(message);
+    } finally {
+      setIsProcessingPhoto(false);
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Ukuran file maksimal 5MB");
-      return;
-    }
-
-    setPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
   };
 
   const onSubmit = async (data: VisitorRegistrationData) => {
+    if (!photoFile) {
+      setPhotoError("Foto Selfie wajib diupload.");
+      toast.error("Foto Selfie wajib diupload.");
+      document.getElementById("photo-upload")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       let fotoUrl = "";
 
-      if (photoFile) {
-        const formData = new FormData();
-        formData.append("file", photoFile);
+      const formData = new FormData();
+      formData.append("file", photoFile);
 
-        const uploadRes = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-        if (!uploadRes.ok) {
-          const err = await uploadRes.json();
-          throw new Error(err.error || "Gagal upload foto");
-        }
-
-        const uploadData = await uploadRes.json();
-        fotoUrl = uploadData.url;
+      if (!uploadRes.ok) {
+        const err = await uploadRes.json();
+        throw new Error(err.error || "Gagal upload foto");
       }
+
+      const uploadData = await uploadRes.json();
+      fotoUrl = uploadData.url;
 
       const res = await fetch("/api/visitors", {
         method: "POST",
@@ -126,12 +144,15 @@ export function VisitorForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="instansi">Instansi / Organisasi</Label>
+            <Label htmlFor="instansi">Instansi / Organisasi *</Label>
             <Input
               id="instansi"
-              placeholder="Nama instansi (opsional)"
+              placeholder="Nama instansi / organisasi"
               {...register("instansi")}
             />
+            {errors.instansi && (
+              <p className="text-sm text-destructive">{errors.instansi.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -161,10 +182,10 @@ export function VisitorForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="orang_yang_dituju">Programa (opsional)</Label>
+            <Label htmlFor="orang_yang_dituju">Programa</Label>
             <Input
               id="orang_yang_dituju"
-              placeholder="Contoh: Programa 1, PRG-001, RRI-PRO2"
+              placeholder="Opsional"
               {...register("orang_yang_dituju")}
             />
             {errors.orang_yang_dituju && (
@@ -173,7 +194,7 @@ export function VisitorForm() {
           </div>
 
           <div className="space-y-2">
-            <Label>Foto Selfie</Label>
+            <Label>Foto Selfie *</Label>
             <div className="flex flex-col items-center gap-4 rounded-lg border-2 border-dashed p-6">
               {photoPreview ? (
                 <img
@@ -190,17 +211,32 @@ export function VisitorForm() {
                 <input
                   id="photo-upload"
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
                   className="hidden"
                   onChange={handlePhotoChange}
+                  disabled={isProcessingPhoto}
                 />
                 <span className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-input bg-background px-3 text-sm font-medium hover:bg-accent">
-                  <Upload className="h-4 w-4" />
-                  Upload Foto
+                  {isProcessingPhoto ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Memproses...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4" />
+                      {photoFile ? "Ganti Foto" : "Upload Foto"}
+                    </>
+                  )}
                 </span>
               </label>
-              <p className="text-xs text-muted-foreground">Maks. 5MB (JPG, PNG, WebP)</p>
+              <p className="text-xs text-muted-foreground">
+                Maks. 5MB (JPG, PNG, WebP) &mdash; otomatis dikompres
+              </p>
             </div>
+            {photoError && (
+              <p className="text-sm text-destructive">{photoError}</p>
+            )}
           </div>
 
           <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
