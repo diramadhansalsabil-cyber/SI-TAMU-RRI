@@ -19,6 +19,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { visitorUpdateSchema, type VisitorFormData } from "@/lib/validations/visitor";
 import { compressImage, ImageValidationError } from "@/lib/image-compress";
+import {
+  OTHER_VALUE,
+  PEKERJAAN_OPTIONS,
+  TUJUAN_OPTIONS,
+  PROGRAMA_OPTIONS,
+} from "@/lib/constants/visitor-options";
 import { Visitor } from "@/types";
 
 interface VisitorEditDialogProps {
@@ -26,6 +32,15 @@ interface VisitorEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+}
+
+const selectClass =
+  "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+
+function resolveChoice(value: string | null, options: readonly string[]) {
+  if (value && options.includes(value)) return { choice: value, other: "" };
+  if (value) return { choice: OTHER_VALUE, other: value };
+  return { choice: "", other: "" };
 }
 
 export function VisitorEditDialog({
@@ -40,15 +55,31 @@ export function VisitorEditDialog({
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
 
+  const pekerjaanInit = resolveChoice(visitor.pekerjaan, PEKERJAAN_OPTIONS);
+  const tujuanInit = resolveChoice(visitor.tujuan_kunjungan, TUJUAN_OPTIONS);
+
+  const [pekerjaanChoice, setPekerjaanChoice] = useState(pekerjaanInit.choice);
+  const [pekerjaanOther, setPekerjaanOther] = useState(pekerjaanInit.other);
+  const [tujuanChoice, setTujuanChoice] = useState(tujuanInit.choice);
+  const [tujuanOther, setTujuanOther] = useState(tujuanInit.other);
+
+  const programaInOptions =
+    !!visitor.orang_yang_dituju && PROGRAMA_OPTIONS.includes(visitor.orang_yang_dituju as (typeof PROGRAMA_OPTIONS)[number]);
+
   const {
     register,
     handleSubmit,
+    setValue,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<VisitorFormData>({
     resolver: zodResolver(visitorUpdateSchema),
     defaultValues: {
       nama_lengkap: visitor.nama_lengkap,
       nomor_telepon: visitor.nomor_telepon,
+      email: visitor.email || "",
+      pekerjaan: visitor.pekerjaan || "",
       instansi: visitor.instansi || "",
       alamat: visitor.alamat,
       tujuan_kunjungan: visitor.tujuan_kunjungan,
@@ -56,6 +87,20 @@ export function VisitorEditDialog({
       foto_url: visitor.foto_url || "",
     },
   });
+
+  const handlePekerjaanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setPekerjaanChoice(value);
+    clearErrors("pekerjaan");
+    setValue("pekerjaan", value === OTHER_VALUE ? pekerjaanOther : value);
+  };
+
+  const handleTujuanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setTujuanChoice(value);
+    clearErrors("tujuan_kunjungan");
+    setValue("tujuan_kunjungan", value === OTHER_VALUE ? tujuanOther : value);
+  };
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -85,6 +130,15 @@ export function VisitorEditDialog({
   };
 
   const onSubmit = async (data: VisitorFormData) => {
+    if (pekerjaanChoice === OTHER_VALUE && !pekerjaanOther.trim()) {
+      setError("pekerjaan", { message: "Mohon tuliskan pekerjaan" });
+      return;
+    }
+    if (tujuanChoice === OTHER_VALUE && !tujuanOther.trim()) {
+      setError("tujuan_kunjungan", { message: "Mohon tuliskan tujuan kunjungan" });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       let fotoUrl = visitor.foto_url || "";
@@ -149,6 +203,45 @@ export function VisitorEditDialog({
             )}
           </div>
           <div className="space-y-2">
+            <Label htmlFor="edit-email">Email</Label>
+            <Input id="edit-email" type="email" {...register("email")} />
+            {errors.email && (
+              <p className="text-sm text-destructive">{errors.email.message}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="edit-pekerjaan">Pekerjaan</Label>
+            <select
+              id="edit-pekerjaan"
+              className={selectClass}
+              value={pekerjaanChoice}
+              onChange={handlePekerjaanChange}
+            >
+              <option value="" disabled>
+                Pilih pekerjaan
+              </option>
+              {PEKERJAAN_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+            {pekerjaanChoice === OTHER_VALUE && (
+              <Input
+                placeholder="Tuliskan pekerjaan"
+                value={pekerjaanOther}
+                onChange={(e) => {
+                  setPekerjaanOther(e.target.value);
+                  setValue("pekerjaan", e.target.value);
+                  clearErrors("pekerjaan");
+                }}
+              />
+            )}
+            {errors.pekerjaan && (
+              <p className="text-sm text-destructive">{errors.pekerjaan.message}</p>
+            )}
+          </div>
+          <div className="space-y-2">
             <Label>Foto</Label>
             <div className="flex items-center gap-4">
               {currentPhoto ? (
@@ -196,7 +289,7 @@ export function VisitorEditDialog({
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-instansi">Instansi</Label>
+            <Label htmlFor="edit-instansi">Instansi (opsional)</Label>
             <Input id="edit-instansi" {...register("instansi")} />
           </div>
           <div className="space-y-2">
@@ -208,14 +301,56 @@ export function VisitorEditDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="edit-tujuan">Tujuan Kunjungan</Label>
-            <Textarea id="edit-tujuan" rows={2} {...register("tujuan_kunjungan")} />
+            <select
+              id="edit-tujuan"
+              className={selectClass}
+              value={tujuanChoice}
+              onChange={handleTujuanChange}
+            >
+              <option value="" disabled>
+                Pilih tujuan kunjungan
+              </option>
+              {TUJUAN_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+            {tujuanChoice === OTHER_VALUE && (
+              <Input
+                placeholder="Tuliskan tujuan kunjungan"
+                value={tujuanOther}
+                onChange={(e) => {
+                  setTujuanOther(e.target.value);
+                  setValue("tujuan_kunjungan", e.target.value);
+                  clearErrors("tujuan_kunjungan");
+                }}
+              />
+            )}
             {errors.tujuan_kunjungan && (
               <p className="text-sm text-destructive">{errors.tujuan_kunjungan.message}</p>
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-dituju">Programa (opsional)</Label>
-            <Input id="edit-dituju" placeholder="Boleh dikosongkan" {...register("orang_yang_dituju")} />
+            <Label htmlFor="edit-dituju">Pilihan Programa</Label>
+            <select
+              id="edit-dituju"
+              className={selectClass}
+              defaultValue={visitor.orang_yang_dituju || ""}
+              {...register("orang_yang_dituju")}
+            >
+              <option value="" disabled>
+                Pilih programa / bagian
+              </option>
+              {!programaInOptions && visitor.orang_yang_dituju && (
+                <option value={visitor.orang_yang_dituju}>{visitor.orang_yang_dituju}</option>
+              )}
+              {PROGRAMA_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
             {errors.orang_yang_dituju && (
               <p className="text-sm text-destructive">{errors.orang_yang_dituju.message}</p>
             )}

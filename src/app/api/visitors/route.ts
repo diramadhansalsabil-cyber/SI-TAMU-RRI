@@ -71,6 +71,8 @@ export async function POST(request: NextRequest) {
         nama_lengkap: sanitizeInput(data.nama_lengkap),
         nik: "-",
         nomor_telepon: sanitizeInput(data.nomor_telepon),
+        email: data.email ? sanitizeInput(data.email) : null,
+        pekerjaan: data.pekerjaan ? sanitizeInput(data.pekerjaan) : null,
         instansi: data.instansi ? sanitizeInput(data.instansi) : null,
         alamat: sanitizeInput(data.alamat),
         tujuan_kunjungan: sanitizeInput(data.tujuan_kunjungan),

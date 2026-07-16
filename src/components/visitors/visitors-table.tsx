@@ -99,6 +99,8 @@ export function VisitorsTable({ visitors, onRefresh }: VisitorsTableProps) {
         },
       },
       { accessorKey: "nomor_telepon", header: "Telepon" },
+      { accessorKey: "email", header: "Email", cell: ({ row }) => row.original.email || "-" },
+      { accessorKey: "pekerjaan", header: "Pekerjaan", cell: ({ row }) => row.original.pekerjaan || "-" },
       { accessorKey: "instansi", header: "Instansi", cell: ({ row }) => row.original.instansi || "-" },
       { accessorKey: "tujuan_kunjungan", header: "Tujuan" },
       { accessorKey: "orang_yang_dituju", header: "Programa" },

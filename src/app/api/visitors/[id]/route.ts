@@ -32,6 +32,8 @@ export async function PUT(
     if (data.nama_lengkap) updateData.nama_lengkap = sanitizeInput(data.nama_lengkap);
     if (data.nik) updateData.nik = sanitizeInput(data.nik);
     if (data.nomor_telepon) updateData.nomor_telepon = sanitizeInput(data.nomor_telepon);
+    if (data.email !== undefined) updateData.email = data.email ? sanitizeInput(data.email) : null;
+    if (data.pekerjaan !== undefined) updateData.pekerjaan = data.pekerjaan ? sanitizeInput(data.pekerjaan) : null;
     if (data.instansi !== undefined) updateData.instansi = data.instansi ? sanitizeInput(data.instansi) : null;
     if (data.alamat) updateData.alamat = sanitizeInput(data.alamat);
     if (data.tujuan_kunjungan) updateData.tujuan_kunjungan = sanitizeInput(data.tujuan_kunjungan);

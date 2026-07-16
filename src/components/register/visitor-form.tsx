@@ -13,6 +13,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { visitorRegistrationSchema, type VisitorRegistrationData } from "@/lib/validations/visitor";
 import { compressImage, ImageValidationError } from "@/lib/image-compress";
+import {
+  OTHER_VALUE,
+  PEKERJAAN_OPTIONS,
+  TUJUAN_OPTIONS,
+  PROGRAMA_OPTIONS,
+} from "@/lib/constants/visitor-options";
+
+const selectClass =
+  "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 
 export function VisitorForm() {
   const router = useRouter();
@@ -22,17 +31,50 @@ export function VisitorForm() {
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
 
+  const [pekerjaanChoice, setPekerjaanChoice] = useState("");
+  const [pekerjaanOther, setPekerjaanOther] = useState("");
+  const [tujuanChoice, setTujuanChoice] = useState("");
+  const [tujuanOther, setTujuanOther] = useState("");
+
   const {
     register,
     handleSubmit,
+    setValue,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<VisitorRegistrationData>({
     resolver: zodResolver(visitorRegistrationSchema),
     defaultValues: {
       instansi: "",
+      pekerjaan: "",
+      tujuan_kunjungan: "",
+      orang_yang_dituju: "",
       foto_url: "",
     },
   });
+
+  const handlePekerjaanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setPekerjaanChoice(value);
+    clearErrors("pekerjaan");
+    if (value === OTHER_VALUE) {
+      setValue("pekerjaan", pekerjaanOther);
+    } else {
+      setValue("pekerjaan", value);
+    }
+  };
+
+  const handleTujuanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setTujuanChoice(value);
+    clearErrors("tujuan_kunjungan");
+    if (value === OTHER_VALUE) {
+      setValue("tujuan_kunjungan", tujuanOther);
+    } else {
+      setValue("tujuan_kunjungan", value);
+    }
+  };
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -62,6 +104,14 @@ export function VisitorForm() {
   };
 
   const onSubmit = async (data: VisitorRegistrationData) => {
+    if (pekerjaanChoice === OTHER_VALUE && !pekerjaanOther.trim()) {
+      setError("pekerjaan", { message: "Mohon tuliskan pekerjaan Anda" });
+      return;
+    }
+    if (tujuanChoice === OTHER_VALUE && !tujuanOther.trim()) {
+      setError("tujuan_kunjungan", { message: "Mohon tuliskan tujuan kunjungan" });
+      return;
+    }
     if (!photoFile) {
       setPhotoError("Foto Selfie wajib diupload.");
       toast.error("Foto Selfie wajib diupload.");
@@ -71,8 +121,6 @@ export function VisitorForm() {
 
     setIsSubmitting(true);
     try {
-      let fotoUrl = "";
-
       const formData = new FormData();
       formData.append("file", photoFile);
 
@@ -87,7 +135,7 @@ export function VisitorForm() {
       }
 
       const uploadData = await uploadRes.json();
-      fotoUrl = uploadData.url;
+      const fotoUrl = uploadData.url;
 
       const res = await fetch("/api/visitors", {
         method: "POST",
@@ -132,22 +180,70 @@ export function VisitorForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="nomor_telepon">Nomor Telepon *</Label>
+            <Label htmlFor="nomor_telepon">Nomor Telepon / WhatsApp *</Label>
             <Input
               id="nomor_telepon"
-              placeholder="08xxxxxxxxxx"
+              inputMode="numeric"
+              placeholder="081234567xxx"
               {...register("nomor_telepon")}
             />
+            <p className="text-xs text-muted-foreground">Format: 081234567xxx</p>
             {errors.nomor_telepon && (
               <p className="text-sm text-destructive">{errors.nomor_telepon.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="instansi">Instansi / Organisasi *</Label>
+            <Label htmlFor="email">Email *</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="nama@email.com"
+              {...register("email")}
+            />
+            {errors.email && (
+              <p className="text-sm text-destructive">{errors.email.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="pekerjaan-select">Pekerjaan *</Label>
+            <select
+              id="pekerjaan-select"
+              className={selectClass}
+              value={pekerjaanChoice}
+              onChange={handlePekerjaanChange}
+            >
+              <option value="" disabled>
+                Pilih pekerjaan
+              </option>
+              {PEKERJAAN_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+            {pekerjaanChoice === OTHER_VALUE && (
+              <Input
+                placeholder="Tuliskan pekerjaan Anda"
+                value={pekerjaanOther}
+                onChange={(e) => {
+                  setPekerjaanOther(e.target.value);
+                  setValue("pekerjaan", e.target.value);
+                  clearErrors("pekerjaan");
+                }}
+              />
+            )}
+            {errors.pekerjaan && (
+              <p className="text-sm text-destructive">{errors.pekerjaan.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="instansi">Asal Instansi / Perusahaan / Organisasi</Label>
             <Input
               id="instansi"
-              placeholder="Nama instansi / organisasi"
+              placeholder="Opsional"
               {...register("instansi")}
             />
             {errors.instansi && (
@@ -156,11 +252,11 @@ export function VisitorForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="alamat">Alamat *</Label>
+            <Label htmlFor="alamat">Alamat Lengkap *</Label>
             <Textarea
               id="alamat"
               placeholder="Alamat lengkap"
-              rows={2}
+              rows={3}
               {...register("alamat")}
             />
             {errors.alamat && (
@@ -169,32 +265,62 @@ export function VisitorForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tujuan_kunjungan">Tujuan Kunjungan *</Label>
-            <Textarea
-              id="tujuan_kunjungan"
-              placeholder="Keperluan kunjungan"
-              rows={2}
-              {...register("tujuan_kunjungan")}
-            />
+            <Label htmlFor="tujuan-select">Tujuan Kunjungan *</Label>
+            <select
+              id="tujuan-select"
+              className={selectClass}
+              value={tujuanChoice}
+              onChange={handleTujuanChange}
+            >
+              <option value="" disabled>
+                Pilih tujuan kunjungan
+              </option>
+              {TUJUAN_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+            {tujuanChoice === OTHER_VALUE && (
+              <Input
+                placeholder="Tuliskan tujuan kunjungan"
+                value={tujuanOther}
+                onChange={(e) => {
+                  setTujuanOther(e.target.value);
+                  setValue("tujuan_kunjungan", e.target.value);
+                  clearErrors("tujuan_kunjungan");
+                }}
+              />
+            )}
             {errors.tujuan_kunjungan && (
               <p className="text-sm text-destructive">{errors.tujuan_kunjungan.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="orang_yang_dituju">Programa</Label>
-            <Input
-              id="orang_yang_dituju"
-              placeholder="Opsional"
+            <Label htmlFor="programa-select">Pilihan Programa (Ditujukan ke Bagian Mana) *</Label>
+            <select
+              id="programa-select"
+              className={selectClass}
+              defaultValue=""
               {...register("orang_yang_dituju")}
-            />
+            >
+              <option value="" disabled>
+                Pilih programa / bagian
+              </option>
+              {PROGRAMA_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
             {errors.orang_yang_dituju && (
               <p className="text-sm text-destructive">{errors.orang_yang_dituju.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label>Foto Selfie *</Label>
+            <Label>Foto Selfie / Bukti Kunjungan *</Label>
             <div className="flex flex-col items-center gap-4 rounded-lg border-2 border-dashed p-6">
               {photoPreview ? (
                 <img
@@ -239,7 +365,7 @@ export function VisitorForm() {
             )}
           </div>
 
-          <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+          <Button type="submit" className="w-full" size="lg" disabled={isSubmitting || isProcessingPhoto}>
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

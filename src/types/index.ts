@@ -3,6 +3,8 @@ export interface Visitor {
   nama_lengkap: string;
   nik: string;
   nomor_telepon: string;
+  email: string | null;
+  pekerjaan: string | null;
   instansi: string | null;
   alamat: string;
   tujuan_kunjungan: string;

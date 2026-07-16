@@ -16,7 +16,16 @@ export const visitorSchema = z.object({
     .min(10, "Nomor Telepon wajib diisi (minimal 10 digit)")
     .max(20, "Nomor telepon maksimal 20 digit")
     .regex(/^[0-9+\-\s]+$/, "Format nomor telepon tidak valid"),
-  instansi: z.string().max(200).optional().or(z.literal("")),
+  email: z
+    .string()
+    .min(1, "Email wajib diisi")
+    .email("Format email tidak valid")
+    .max(150, "Email maksimal 150 karakter"),
+  pekerjaan: z
+    .string()
+    .min(1, "Pekerjaan wajib diisi")
+    .max(100, "Pekerjaan maksimal 100 karakter"),
+  instansi: z.string().max(200, "Instansi maksimal 200 karakter").optional().or(z.literal("")),
   alamat: z
     .string()
     .min(5, "Alamat wajib diisi (minimal 5 karakter)")
@@ -27,18 +36,12 @@ export const visitorSchema = z.object({
     .max(300, "Tujuan kunjungan maksimal 300 karakter"),
   orang_yang_dituju: z
     .string()
-    .max(255, "Maksimal 255 karakter")
-    .optional()
-    .or(z.literal("")),
+    .min(1, "Programa wajib dipilih")
+    .max(255, "Maksimal 255 karakter"),
   foto_url: z.string().url().optional().or(z.literal("")),
 });
 
-export const visitorRegistrationSchema = visitorSchema.omit({ nik: true }).extend({
-  instansi: z
-    .string()
-    .min(2, "Instansi / Organisasi wajib diisi")
-    .max(200, "Instansi maksimal 200 karakter"),
-});
+export const visitorRegistrationSchema = visitorSchema.omit({ nik: true });
 
 export const visitorUpdateSchema = visitorSchema.partial();
 
